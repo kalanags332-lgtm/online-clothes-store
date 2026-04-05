@@ -14,7 +14,7 @@ export default function Products() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadShopifyData() {
+    async function loadStoreData() {
       setIsLoading(true);
       try {
         const data = await getProducts();
@@ -25,7 +25,7 @@ export default function Products() {
       }
       setIsLoading(false);
     }
-    loadShopifyData();
+    loadStoreData();
   }, []);
 
   const categories = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Shoes', 'Accessories'];
@@ -74,7 +74,7 @@ export default function Products() {
           {isLoading ? (
             <div className="empty-state">
                <Loader className="animate-spin" size={32} style={{ margin: '0 auto 1rem' }} />
-               <p>Loading catalog from Shopify...</p>
+               <p>Loading catalog from Medusa...</p>
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="products-grid">

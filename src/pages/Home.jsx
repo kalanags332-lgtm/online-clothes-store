@@ -10,7 +10,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadShopifyData() {
+    async function loadStoreData() {
       setIsLoading(true);
       try {
         const data = await getProducts();
@@ -20,7 +20,7 @@ export default function Home() {
       }
       setIsLoading(false);
     }
-    loadShopifyData();
+    loadStoreData();
   }, []);
 
   return (
@@ -64,7 +64,7 @@ export default function Home() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '4rem' }}>
             <Loader className="animate-spin" size={32} style={{ margin: '0 auto 1rem' }} />
-            <p>Loading from Shopify...</p>
+            <p>Loading from Medusa...</p>
           </div>
         ) : (
           <div className="products-grid">
