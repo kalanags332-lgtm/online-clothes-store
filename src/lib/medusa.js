@@ -1,28 +1,37 @@
-import Medusa from "@medusajs/medusa-js";
-
-const BACKEND_URL = import.meta.env.VITE_MEDUSA_BACKEND_URL || "http://localhost:9000";
-
-export const medusa = new Medusa({ 
-  baseUrl: BACKEND_URL, 
-  publishableApiKey: import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY,
-  maxRetries: 3 
-});
+const BACKEND_URL = import.meta.env.VITE_MEDUSA_BACKEND_URL;
+const API_KEY = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY;
 
 export async function getProducts() {
   try {
-    const { products } = await medusa.products.list();
+    const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+    const response = await fetch(`${formattedUrl}/store/products`, {
+      method: 'GET',
+      headers: {
+        "x-publishable-api-key": API_KEY,
+      }
+    });
+
+    if (!response.ok) {
+      console.error("Medusa API Error Response:", await response.text());
+      return [];
+    }
+    
+    const data = await response.json();
+    const products = data.products || [];
     
     return products.map(p => {
-      // Medusa prices are typically in cents (e.g. 4000 = $40.00)
-      const priceAmount = p.variants?.[0]?.prices?.[0]?.amount || 0;
-      const price = priceAmount / 100;
+      let priceAmount = 0;
+      if (p.variants && p.variants.length > 0) {
+        const v = p.variants[0];
+        priceAmount = v.calculated_price?.calculated_amount || v.prices?.[0]?.amount || 0;
+      }
       
       return {
         id: p.id,
         name: p.title,
         handle: p.handle,
-        price: price,
-        category: p.collection?.title || 'Uncategorized',
+        price: priceAmount,
+        category: p.collection?.title || p.categories?.[0]?.name || 'Uncategorized',
         image: p.thumbnail || null,
         rating: 4.5
       };
