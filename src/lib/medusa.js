@@ -99,3 +99,19 @@ export async function getCart() {
     return null;
   }
 }
+
+export async function removeFromCart(lineItemId) {
+  const cartId = localStorage.getItem('medusa_cart_id');
+  if (!cartId) return false;
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+  try {
+    const res = await fetch(`${formattedUrl}/store/carts/${cartId}/line-items/${lineItemId}`, {
+      method: "DELETE",
+      headers: { "x-publishable-api-key": API_KEY }
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("Remove from cart failed", e);
+    return false;
+  }
+}

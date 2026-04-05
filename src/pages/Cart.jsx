@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, ArrowRight, Loader } from 'lucide-react';
-import { getCart } from '../lib/medusa';
+import { getCart, removeFromCart } from '../lib/medusa';
 import './Cart.css';
 
 export default function Cart() {
@@ -17,6 +17,18 @@ export default function Cart() {
     }
     loadCart();
   }, []);
+
+  const handleRemove = async (lineItemId) => {
+    setIsLoading(true);
+    const success = await removeFromCart(lineItemId);
+    if (success) {
+      const updatedCart = await getCart();
+      setCart(updatedCart);
+    } else {
+      alert("Failed to remove item.");
+      setIsLoading(false);
+    }
+  };
 
   const handleCheckout = () => {
     alert("Checkout flow requires a live Medusa storefront redirect. Your cart ID is: " + cart?.id);
@@ -46,13 +58,21 @@ export default function Cart() {
       <div className="cart-layout" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
         <div className="cart-items">
           {cart.items.map(item => (
-            <div key={item.id} className="cart-item" style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
+            <div key={item.id} className="cart-item" style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem', alignItems: 'center' }}>
               <img src={item.thumbnail} alt={item.title} className="cart-item-image" style={{ width: '100px', borderRadius: '8px' }} />
               <div className="cart-item-details" style={{ flex: 1 }}>
                 <h3>{item.title} - {item.variant_title}</h3>
                 <p>Quantity: {item.quantity}</p>
                 <p className="cart-item-price" style={{ fontWeight: 'bold' }}>{currencySymbol}{item.unit_price}</p>
               </div>
+              <button 
+                 className="btn btn-secondary remove-btn" 
+                 style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '0.5rem' }} 
+                 onClick={() => handleRemove(item.id)}
+                 aria-label="Remove item"
+              >
+                <Trash2 size={20} />
+              </button>
             </div>
           ))}
         </div>
