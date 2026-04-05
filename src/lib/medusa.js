@@ -30,6 +30,7 @@ export async function getProducts() {
       
       return {
         id: p.id,
+        variantId: p.variants?.[0]?.id,
         name: p.title,
         handle: p.handle,
         price: priceAmount,
@@ -44,26 +45,57 @@ export async function getProducts() {
   }
 }
 
-export async function createCheckout(lineItems) {
+export async function createCart() {
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
   try {
-    // 1. Create a Medusa cart
-    const { cart } = await medusa.carts.create();
-    
-    // 2. Add items to cart (in a real Medusa flow, lineItems must contain real Medusa variant IDs)
-    for (const item of lineItems) {
-      // We assume item.id is the variant_id for this simplified demo
-      await medusa.carts.lineItems.create(cart.id, {
-        variant_id: item.id,
-        quantity: item.quantity
-      });
-    }
-    
-    // 3. Return the checkout URL natively, or navigate to a custom frontend checkout page
-    // Medusa typically requires a custom checkout flow on the frontend or a direct link if using a hosted checkout
-    return `/checkout/${cart.id}`;
-    
-  } catch (error) {
-    console.error("Error creating Medusa Checkout:", error);
+    const regRes = await fetch(`${formattedUrl}/store/regions`, { headers: { "x-publishable-api-key": API_KEY } });
+    const regData = await regRes.json();
+    const regionId = regData.regions?.[0]?.id;
+
+    const res = await fetch(`${formattedUrl}/store/carts`, {
+      method: "POST",
+      headers: { "x-publishable-api-key": API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ region_id: regionId })
+    });
+    const data = await res.json();
+    if (data.cart?.id) localStorage.setItem('medusa_cart_id', data.cart.id);
+    return data.cart?.id;
+  } catch (e) {
+    console.error("Cart creation failed:", e);
+  }
+}
+
+export async function addToCart(variantId, quantity = 1) {
+  let cartId = localStorage.getItem('medusa_cart_id');
+  if (!cartId) cartId = await createCart();
+  if (!cartId) return false;
+  
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+  try {
+    const res = await fetch(`${formattedUrl}/store/carts/${cartId}/line-items`, {
+      method: "POST",
+      headers: { "x-publishable-api-key": API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ variant_id: variantId, quantity })
+    });
+    return res.ok;
+  } catch (e) {
+    console.error("Add to cart failed", e);
+    return false;
+  }
+}
+
+export async function getCart() {
+  const cartId = localStorage.getItem('medusa_cart_id');
+  if (!cartId) return null;
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+  try {
+    const res = await fetch(`${formattedUrl}/store/carts/${cartId}`, {
+      headers: { "x-publishable-api-key": API_KEY }
+    });
+    const data = await res.json();
+    return data.cart || null;
+  } catch (e) {
+    console.error("Fetch cart failed", e);
     return null;
   }
 }

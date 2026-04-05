@@ -1,47 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Trash2, Minus, Plus, ArrowRight, Loader } from 'lucide-react';
-import { createCheckout } from '../lib/medusa';
+import { Trash2, ArrowRight, Loader } from 'lucide-react';
+import { getCart } from '../lib/medusa';
 import './Cart.css';
 
 export default function Cart() {
-  const [cartItems, setCartItems] = useState([]);
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [cart, setCart] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  const shipping = 5.00;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
-
-  const handleCheckout = async () => {
-    setIsCheckingOut(true);
-    try {
-      const checkoutUrl = await createCheckout(cartItems);
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-      } else {
-        alert("Checkout failed. Please ensure your Shopify Storefront API token is valid.");
-      }
-    } catch (e) {
-      console.error(e);
-      alert("Error starting checkout.");
+  useEffect(() => {
+    async function loadCart() {
+      setIsLoading(true);
+      const fetchedCart = await getCart();
+      setCart(fetchedCart);
+      setIsLoading(false);
     }
-    setIsCheckingOut(false);
+    loadCart();
+  }, []);
+
+  const handleCheckout = () => {
+    alert("Checkout flow requires a live Medusa storefront redirect. Your cart ID is: " + cart?.id);
   }
+
+  if (isLoading) {
+    return <div className="container" style={{padding: '5rem', textAlign: 'center'}}><Loader className="animate-spin" /></div>;
+  }
+
+  if (!cart || !cart.items || cart.items.length === 0) {
+    return (
+      <div className="cart-page container animate-fade-in">
+        <h1 className="cart-title">Your Cart</h1>
+        <div className="empty-cart">
+          <p>Your cart is empty.</p>
+          <Link to="/products" className="btn btn-primary mt-4">Start Shopping</Link>
+        </div>
+      </div>
+    );
+  }
+
+  const currencySymbol = cart.currency_code === 'eur' ? '€' : '$';
 
   return (
     <div className="cart-page container animate-fade-in">
       <h1 className="cart-title">Your Cart</h1>
-      {/* Fallback mock UI for cart since we don't have global cart context in this demo */}
-      <div className="empty-cart">
-        <p>The cart logic is wired up to Shopify! Add a valid Storefront Token to test the checkout flow.</p>
-        <button 
-          className="btn btn-primary mt-4" 
-          onClick={handleCheckout} 
-          disabled={isCheckingOut}
-        >
-          {isCheckingOut ? <Loader className="animate-spin" size={18} /> : "Test Shopify Checkout Redirect"}
-        </button>
+      <div className="cart-layout" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+        <div className="cart-items">
+          {cart.items.map(item => (
+            <div key={item.id} className="cart-item" style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid #eee', paddingBottom: '1rem', marginBottom: '1rem' }}>
+              <img src={item.thumbnail} alt={item.title} className="cart-item-image" style={{ width: '100px', borderRadius: '8px' }} />
+              <div className="cart-item-details" style={{ flex: 1 }}>
+                <h3>{item.title} - {item.variant_title}</h3>
+                <p>Quantity: {item.quantity}</p>
+                <p className="cart-item-price" style={{ fontWeight: 'bold' }}>{currencySymbol}{item.unit_price}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="cart-summary" style={{ background: '#f9fafb', padding: '1.5rem', borderRadius: '12px', height: 'fit-content' }}>
+          <h3>Order Summary</h3>
+          <div className="summary-row" style={{ display: 'flex', justifyContent: 'space-between', margin: '1rem 0' }}>
+            <span>Subtotal</span>
+            <span>{currencySymbol}{cart.item_subtotal || cart.subtotal}</span>
+          </div>
+          <button className="btn btn-primary" style={{width: '100%', marginTop: '1rem'}} onClick={handleCheckout}>
+            Proceed to Checkout
+          </button>
+        </div>
       </div>
     </div>
   );
