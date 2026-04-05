@@ -13,7 +13,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container nav-container">
         <Link to="/" className="brand">
-          <span className="brand-icon">✨</span> Aura
+          <span className="brand-icon">✨</span> K-Mart
         </Link>
         
         <div className={`nav-links ${isOpen ? 'open' : ''}`}>

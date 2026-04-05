@@ -30,7 +30,7 @@ export default function Home() {
           <h1 className="hero-title animate-fade-in">Discover Your Signature Style</h1>
           <p className="hero-subtitle animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Explore our new collection of premium essentials designed for modern living.
-            Elevate your wardrobe with Aura.
+            Elevate your wardrobe with K-Mart.
           </p>
           <div className="hero-cta animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <Link to="/products" className="btn btn-primary">
