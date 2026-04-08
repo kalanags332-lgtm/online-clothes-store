@@ -25,7 +25,19 @@ export default function Navbar() {
         </div>
 
         <div className="nav-actions">
-          <button className="icon-btn" aria-label="Search"><Search size={20} /></button>
+          <form className="search-form" onSubmit={(e) => {
+            e.preventDefault();
+            const query = e.target.search.value;
+            if (query) window.location.href = `/products?q=${encodeURIComponent(query)}`;
+          }} style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '20px', padding: '0.2rem 0.8rem' }}>
+            <Search size={16} color="#6b7280" />
+            <input 
+              name="search" 
+              type="text" 
+              placeholder="Search products..." 
+              style={{ border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.5rem', width: '120px', fontSize: '0.9rem' }} 
+            />
+          </form>
           <button className="icon-btn" aria-label="Account"><User size={20} /></button>
           <Link to="/cart" className="icon-btn cart-btn">
             <ShoppingBag size={20} />

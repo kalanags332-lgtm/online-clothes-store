@@ -1,12 +1,19 @@
 const BACKEND_URL = import.meta.env.VITE_MEDUSA_BACKEND_URL || "https://my-medusa-clothstore-backend-production.up.railway.app";
 const API_KEY = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY;
 
-export async function getProducts() {
+export async function getProducts(searchQuery = '') {
   console.log("Target Backend:", BACKEND_URL);
   console.log("API Key Status:", API_KEY ? "Configured" : "MISSING");
   try {
     const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-    const response = await fetch(`${formattedUrl}/store/products`, {
+    let endpoint = `${formattedUrl}/store/products`;
+    
+    // Leverage Medusa's native incredibly fast search caching endpoint
+    if (searchQuery) {
+      endpoint += `?q=${encodeURIComponent(searchQuery)}`;
+    }
+
+    const response = await fetch(endpoint, {
       method: 'GET',
       headers: {
         "x-publishable-api-key": API_KEY,
