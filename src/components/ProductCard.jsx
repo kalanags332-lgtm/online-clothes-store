@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Star, Check } from 'lucide-react';
-import { addToCart } from '../lib/medusa';
+import { useCart } from '../context/CartContext';
 import './ProductCard.css';
 
 export default function ProductCard({ product }) {
   const [added, setAdded] = useState(false);
+  const { addToCart } = useCart();
 
   const handleAdd = async () => {
     if (!product.variantId) return alert("No variant available for this product!");

@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, Search, User, X } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 import './Navbar.css';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
+  const { itemCount } = useCart();
 
   const isActive = (path) => location.pathname === path ? 'active' : '';
 
@@ -27,7 +29,7 @@ export default function Navbar() {
           <button className="icon-btn" aria-label="Account"><User size={20} /></button>
           <Link to="/cart" className="icon-btn cart-btn">
             <ShoppingBag size={20} />
-            <span className="cart-badge">3</span>
+            {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}
           </Link>
           <button className="mobile-menu-btn" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X size={24} /> : <Menu size={24} />}

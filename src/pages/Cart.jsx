@@ -1,33 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, ArrowRight, Loader } from 'lucide-react';
-import { getCart, removeFromCart } from '../lib/medusa';
+import { useCart } from '../context/CartContext';
 import './Cart.css';
 
 export default function Cart() {
-  const [cart, setCart] = useState(null);
+  const { cart, removeFromCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
 
+  // We wait to show loading until the context has initialized
   useEffect(() => {
-    async function loadCart() {
-      setIsLoading(true);
-      const fetchedCart = await getCart();
-      setCart(fetchedCart);
+    if (cart !== undefined) {
       setIsLoading(false);
     }
-    loadCart();
-  }, []);
+  }, [cart]);
 
   const handleRemove = async (lineItemId) => {
     setIsLoading(true);
     const success = await removeFromCart(lineItemId);
-    if (success) {
-      const updatedCart = await getCart();
-      setCart(updatedCart);
-    } else {
+    if (!success) {
       alert("Failed to remove item.");
-      setIsLoading(false);
     }
+    // We can rely on context update to un-set isLoading
   };
 
   const handleCheckout = () => {
