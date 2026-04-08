@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, Search, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import './Navbar.css';
@@ -7,6 +7,7 @@ import './Navbar.css';
 export default function Navbar() {
   const [isOpen, setIsOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { itemCount } = useCart();
 
   const isActive = (path) => location.pathname === path ? 'active' : '';
@@ -28,7 +29,7 @@ export default function Navbar() {
           <form className="search-form" onSubmit={(e) => {
             e.preventDefault();
             const query = e.target.search.value;
-            if (query) window.location.href = `/products?q=${encodeURIComponent(query)}`;
+            if (query) navigate(`/products?q=${encodeURIComponent(query)}`);
           }} style={{ display: 'flex', alignItems: 'center', background: '#f3f4f6', borderRadius: '20px', padding: '0.2rem 0.8rem' }}>
             <Search size={16} color="#6b7280" />
             <input 
