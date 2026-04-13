@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Menu, Search, User, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useUser } from '../context/UserContext';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -9,6 +10,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { itemCount } = useCart();
+  const { user } = useUser();
 
   const isActive = (path) => location.pathname === path ? 'active' : '';
 
@@ -39,7 +41,9 @@ export default function Navbar() {
               style={{ border: 'none', background: 'transparent', outline: 'none', marginLeft: '0.5rem', width: '120px', fontSize: '0.9rem' }} 
             />
           </form>
-          <button className="icon-btn" aria-label="Account"><User size={20} /></button>
+          <Link to="/account" className="icon-btn" aria-label="Account">
+            <User size={20} color={user ? '#3b82f6' : 'currentColor'} />
+          </Link>
           <Link to="/cart" className="icon-btn cart-btn">
             <ShoppingBag size={20} />
             {itemCount > 0 && <span className="cart-badge">{itemCount}</span>}

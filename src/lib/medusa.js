@@ -122,3 +122,40 @@ export async function removeFromCart(lineItemId) {
     return false;
   }
 }
+
+// === CUSTOMER AUTHENTICATION ===
+
+export async function registerCustomer(firstName, lastName, email, password) {
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+  try {
+    const res = await fetch(`${formattedUrl}/store/customers`, {
+      method: 'POST',
+      headers: { "x-publishable-api-key": API_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ first_name: firstName, last_name: lastName, email, password })
+    });
+    if (!res.ok) return { error: await res.text() };
+    const data = await res.json();
+    return { customer: data.customer };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
+
+export async function loginCustomer(email, password) {
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+  try {
+    // Note: V2 uses provider auth. Falling back to simple REST standards
+    // Depending heavily on how your medusa config is structured for auth CORS
+    const res = await fetch(`${formattedUrl}/store/auth`, {
+      method: "POST",
+      headers: { "x-publishable-api-key": API_KEY, "Content-Type": "application/json" },
+      credentials: "omit", // Using token/local storage for simplicity to bypass Strict CORS
+      body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) return { error: await res.text() };
+    const data = await res.json();
+    return { customer: data.customer };
+  } catch (e) {
+    return { error: e.message };
+  }
+}
