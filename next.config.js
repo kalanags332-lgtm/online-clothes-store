@@ -1,5 +1,13 @@
 const checkEnvVariables = require("./check-env-variables")
 
+// Map legacy VITE_ environment variables to NEXT_PUBLIC_ for compatibility
+if (!process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY && process.env.VITE_MEDUSA_PUBLISHABLE_KEY) {
+  process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY = process.env.VITE_MEDUSA_PUBLISHABLE_KEY;
+}
+if (!process.env.MEDUSA_BACKEND_URL && process.env.VITE_MEDUSA_BACKEND_URL) {
+  process.env.MEDUSA_BACKEND_URL = process.env.VITE_MEDUSA_BACKEND_URL;
+}
+
 checkEnvVariables()
 
 /**
