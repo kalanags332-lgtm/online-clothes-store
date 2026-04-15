@@ -4,14 +4,28 @@ const API_KEY = import.meta.env.VITE_MEDUSA_PUBLISHABLE_KEY;
 export async function getProducts(searchQuery = '') {
   console.log("Target Backend:", BACKEND_URL);
   console.log("API Key Status:", API_KEY ? "Configured" : "MISSING");
+  
+  const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
+
   try {
-    const formattedUrl = BACKEND_URL?.endsWith('/') ? BACKEND_URL.slice(0, -1) : BACKEND_URL;
-    let endpoint = `${formattedUrl}/store/products`;
-    
-    // Leverage Medusa's native incredibly fast search caching endpoint
+    // 1. We must have a region_id to get calculated prices in Medusa v2
+    const regRes = await fetch(`${formattedUrl}/store/regions`, { 
+      headers: { "x-publishable-api-key": API_KEY } 
+    });
+    const regData = await regRes.json();
+    const regionId = regData.regions?.[0]?.id;
+
+    // 2. Build the products endpoint with necessary fields and region context
+    const query = new URLSearchParams({
+      fields: "*variants.calculated_price",
+      region_id: regionId
+    });
+
     if (searchQuery) {
-      endpoint += `?q=${encodeURIComponent(searchQuery)}`;
+      query.append("q", searchQuery);
     }
+
+    const endpoint = `${formattedUrl}/store/products?${query.toString()}`;
 
     const response = await fetch(endpoint, {
       method: 'GET',
@@ -21,7 +35,8 @@ export async function getProducts(searchQuery = '') {
     });
 
     if (!response.ok) {
-      console.error("Medusa API Error Response:", await response.text());
+      const errorText = await response.text();
+      console.error("Medusa API Error Response:", errorText);
       return [];
     }
     
@@ -29,15 +44,15 @@ export async function getProducts(searchQuery = '') {
     const products = data.products || [];
     
     return products.map(p => {
-      let priceAmount = 0;
-      if (p.variants && p.variants.length > 0) {
-        const v = p.variants[0];
-        priceAmount = v.calculated_price?.calculated_amount || v.prices?.[0]?.amount || 0;
-      }
+      const variant = p.variants?.[0];
+      
+      // Use the calculated_amount which is now populated thanks to region_id
+      const priceAmount = variant?.calculated_price?.calculated_amount ?? 
+                         variant?.prices?.[0]?.amount ?? 0;
       
       return {
         id: p.id,
-        variantId: p.variants?.[0]?.id,
+        variantId: variant?.id,
         name: p.title,
         handle: p.handle,
         price: priceAmount,
