@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer-grid">
         <div className="footer-brand">
-          <h3>✨ Aura</h3>
+          <h3>✨ K-Mart</h3>
           <p>Elevating your everyday style with premium quality essentials.</p>
           <div className="social-links">
             <a href="#" aria-label="Facebook"><Facebook size={20} /></a>
@@ -47,7 +47,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} Aura Clothing. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} K-Mart Clothing. All rights reserved.</p>
       </div>
     </footer>
   );

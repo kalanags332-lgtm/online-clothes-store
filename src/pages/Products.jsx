@@ -8,16 +8,17 @@ import './Products.css';
 export default function Products() {
   const [searchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
-  const [activeCategory, setActiveCategory] = useState(categoryParam || 'All');
+  const searchQuery = searchParams.get('q');
   
+  const [activeCategory, setActiveCategory] = useState(categoryParam || 'All');
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadShopifyData() {
+    async function loadStoreData() {
       setIsLoading(true);
       try {
-        const data = await getProducts();
+        const data = await getProducts(searchQuery);
         setProducts(data);
       } catch (error) {
         console.error("Failed to load products", error);
@@ -25,8 +26,8 @@ export default function Products() {
       }
       setIsLoading(false);
     }
-    loadShopifyData();
-  }, []);
+    loadStoreData();
+  }, [searchQuery, activeCategory]);
 
   const categories = ['All', 'Tops', 'Bottoms', 'Outerwear', 'Shoes', 'Accessories'];
 
@@ -37,7 +38,7 @@ export default function Products() {
   return (
     <div className="products-page container animate-fade-in">
       <div className="page-header">
-        <h1 className="page-title">{activeCategory} Collections</h1>
+        <h1 className="page-title">{searchQuery ? `Search results for "${searchQuery}"` : `${activeCategory} Collections`}</h1>
         <p className="page-description">
           Showing {isLoading ? '...' : filteredProducts.length} results
         </p>
@@ -74,7 +75,7 @@ export default function Products() {
           {isLoading ? (
             <div className="empty-state">
                <Loader className="animate-spin" size={32} style={{ margin: '0 auto 1rem' }} />
-               <p>Loading catalog from Shopify...</p>
+               <p>Loading catalog from Medusa...</p>
             </div>
           ) : filteredProducts.length > 0 ? (
             <div className="products-grid">

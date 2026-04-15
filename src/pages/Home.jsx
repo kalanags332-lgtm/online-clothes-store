@@ -10,7 +10,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function loadShopifyData() {
+    async function loadStoreData() {
       setIsLoading(true);
       try {
         const data = await getProducts();
@@ -20,7 +20,7 @@ export default function Home() {
       }
       setIsLoading(false);
     }
-    loadShopifyData();
+    loadStoreData();
   }, []);
 
   return (
@@ -30,7 +30,7 @@ export default function Home() {
           <h1 className="hero-title animate-fade-in">Discover Your Signature Style</h1>
           <p className="hero-subtitle animate-fade-in" style={{ animationDelay: '0.1s' }}>
             Explore our new collection of premium essentials designed for modern living.
-            Elevate your wardrobe with Aura.
+            Elevate your wardrobe with K-Mart.
           </p>
           <div className="hero-cta animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <Link to="/products" className="btn btn-primary">
@@ -64,7 +64,7 @@ export default function Home() {
         {isLoading ? (
           <div style={{ textAlign: 'center', padding: '4rem' }}>
             <Loader className="animate-spin" size={32} style={{ margin: '0 auto 1rem' }} />
-            <p>Loading from Shopify...</p>
+            <p>Loading from Medusa...</p>
           </div>
         ) : (
           <div className="products-grid">
