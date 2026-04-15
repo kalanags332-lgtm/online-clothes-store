@@ -10,18 +10,24 @@ export const medusa = new Medusa({
 
 export async function getProducts() {
   try {
-    const { products } = await medusa.products.list();
+    // Medusa v2 requires explicit field selection for calculated prices
+    const { products } = await medusa.products.list({
+      fields: "*variants.calculated_price"
+    });
     
     return products.map(p => {
-      // Medusa prices are typically in cents (e.g. 4000 = $40.00)
-      const priceAmount = p.variants?.[0]?.prices?.[0]?.amount || 0;
-      const price = priceAmount / 100;
+      const variant = p.variants?.[0];
+      
+      // Extract price from Medusa v2 calculated_price field
+      // If the backend uses major units (e.g. 10.00 is 10), we don't divide by 100.
+      // Based on our Medusa v2 setup, we check for calculated_amount.
+      const priceAmount = variant?.calculated_price?.calculated_amount ?? 0;
       
       return {
         id: p.id,
         name: p.title,
         handle: p.handle,
-        price: price,
+        price: priceAmount,
         category: p.collection?.title || 'Uncategorized',
         image: p.thumbnail || null,
         rating: 4.5
