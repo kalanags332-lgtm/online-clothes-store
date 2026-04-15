@@ -10,10 +10,12 @@ export const getPricesForVariant = (variant: any) => {
     return null
   }
 
+  const calculatedAmount = variant.calculated_price.calculated_amount ?? variant.calculated_price.amount
+  
   return {
-    calculated_price_number: variant.calculated_price.calculated_amount,
+    calculated_price_number: calculatedAmount,
     calculated_price: convertToLocale({
-      amount: variant.calculated_price.calculated_amount,
+      amount: calculatedAmount,
       currency_code: variant.calculated_price.currency_code,
     }),
     original_price_number: variant.calculated_price.original_amount,
@@ -23,12 +25,12 @@ export const getPricesForVariant = (variant: any) => {
     }),
     currency_code: variant.calculated_price.currency_code,
     price_type:
+      variant.calculated_price.price_list_type || 
       variant.calculated_price.calculated_price?.price_list_type ||
-      variant.calculated_price.price_list_type ||
       "default",
     percentage_diff: getPercentageDiff(
       variant.calculated_price.original_amount,
-      variant.calculated_price.calculated_amount
+      calculatedAmount
     ),
   }
 }
@@ -50,12 +52,11 @@ export function getProductPrice({
     }
 
     const cheapestVariant: any = product.variants
-      .filter((v: any) => !!v.calculated_price)
+      .filter((v: any) => !!v.calculated_price && (v.calculated_price.calculated_amount !== undefined || v.calculated_price.amount !== undefined))
       .sort((a: any, b: any) => {
-        return (
-          a.calculated_price.calculated_amount -
-          b.calculated_price.calculated_amount
-        )
+        const aPrice = a.calculated_price.calculated_amount ?? a.calculated_price.amount
+        const bPrice = b.calculated_price.calculated_amount ?? b.calculated_price.amount
+        return aPrice - bPrice
       })[0]
 
     return getPricesForVariant(cheapestVariant)

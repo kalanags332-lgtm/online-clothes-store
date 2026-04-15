@@ -15,17 +15,20 @@ export default async function ProductPreview({
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
 }) {
-  // const pricedProduct = await listProducts({
-  //   regionId: region.id,
-  //   queryParams: { id: [product.id!] },
-  // }).then(({ response }) => response.products[0])
+  const hasPrice = product.variants?.some((v: any) => v.calculated_price)
+  const pricedProduct = hasPrice
+    ? product
+    : await listProducts({
+        regionId: region.id,
+        queryParams: { id: [product.id!] },
+      }).then(({ response }) => response.products[0])
 
-  // if (!pricedProduct) {
-  //   return null
-  // }
+  if (!pricedProduct) {
+    return null
+  }
 
   const { cheapestPrice } = getProductPrice({
-    product,
+    product: pricedProduct,
   })
 
   return (
